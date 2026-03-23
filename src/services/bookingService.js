@@ -119,6 +119,162 @@ class BookingService {
       client.release();
     }
   }
+
+
+  
+  /**
+  * Confirm a pending booking
+  */
+  static async confirmBooking(bookingId) {
+    const client = await getClient();
+
+    try {
+      await client.query('BEGIN');
+
+      // Check booking exists and is PENDING
+      const bookingCheck = await client.query(
+        'SELECT id, show_id, status FROM bookings WHERE id = $1',
+        [bookingId]
+      );
+
+      if (bookingCheck.rows.length === 0) {
+        throw new Error('Booking not found');
+      }
+
+      const booking = bookingCheck.rows[0];
+
+      if (booking.status !== 'PENDING') {
+        throw new Error(`Cannot confirm booking with status: ${booking.status}`);
+      }
+
+      // Update booking status
+      await client.query(
+        'UPDATE bookings SET status = $1, updated_at = NOW() WHERE id = $2',
+        ['CONFIRMED', bookingId]
+      );
+
+      await client.query('COMMIT');
+
+      // Release Redis locks (seats are now confirmed)
+      const seatIds = await client.query(
+        'SELECT seat_id FROM booking_seats WHERE booking_id = $1',
+        [bookingId]
+      );
+      
+      await LockService.releaseMultipleSeatLocks(
+        booking.show_id,
+        seatIds.rows.map(r => r.seat_id)
+      );
+
+      const bookingDetails = await this.getBookingDetails(bookingId);
+
+      return {
+        success: true,
+        booking: bookingDetails,
+        message: 'Booking confirmed successfully',
+      };
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+
+
+  /**
+   * Cancel a booking
+   */
+  static async cancelBooking(bookingId) {
+    const client = await getClient();
+
+    try {
+      await client.query('BEGIN');
+
+      const bookingCheck = await client.query(
+        'SELECT id, show_id, status FROM bookings WHERE id = $1',
+        [bookingId]
+      );
+
+      if (bookingCheck.rows.length === 0) {
+        throw new Error('Booking not found');
+      }
+
+      const booking = bookingCheck.rows[0];
+
+      if (booking.status === 'CANCELLED') {
+        throw new Error('Booking already cancelled');
+      }
+
+      // Update status
+      await client.query(
+        'UPDATE bookings SET status = $1, updated_at = NOW() WHERE id = $2',
+        ['CANCELLED', bookingId]
+      );
+
+      await client.query('COMMIT');
+
+      // Release locks if PENDING
+      if (booking.status === 'PENDING') {
+        const seatIds = await client.query(
+          'SELECT seat_id FROM booking_seats WHERE booking_id = $1',
+          [bookingId]
+        );
+        
+        await LockService.releaseMultipleSeatLocks(
+          booking.show_id,
+          seatIds.rows.map(r => r.seat_id)
+        );
+      }
+
+      return {
+        success: true,
+        message: 'Booking cancelled successfully',
+      };
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+
+  
+  /**
+   * Get booking details with seats
+   */
+  static async getBookingDetails(bookingId) {
+    const { query } = require('../config/database');
+
+    const result = await query(
+      `SELECT 
+        b.id, b.user_id, b.show_id, b.total_seats, b.status,
+        b.created_at, b.updated_at,
+        u.name as user_name, u.email as user_email,
+        m.title as movie_title,
+        sh.start_time, sh.end_time,
+        json_agg(json_build_object(
+          'seat_id', s.id,
+          'row', s.row,
+          'seat_number', s.seat_number
+        )) as seats
+       FROM bookings b
+       JOIN users u ON b.user_id = u.id
+       JOIN shows sh ON b.show_id = sh.id
+       JOIN movies m ON sh.movie_id = m.id
+       JOIN booking_seats bs ON b.id = bs.booking_id
+       JOIN seats s ON bs.seat_id = s.id
+       WHERE b.id = $1
+       GROUP BY b.id, u.name, u.email, m.title, sh.start_time, sh.end_time`,
+      [bookingId]
+    );
+
+    return result.rows[0] || null;
+  }
 }
 
 module.exports = BookingService;
