@@ -40,10 +40,8 @@ class BookingService {
 
       // Verify seats exist and belong to the show's screen
       const seatCheck = await client.query(
-        `SELECT s.id FROM seats s
-         JOIN shows sh ON true
-         WHERE s.id = ANY($1) AND sh.id = $2`,
-        [uniqueSeatIds, showId]
+        `SELECT id FROM seats WHERE id = ANY($1)`,
+        [uniqueSeatIds]
       );
 
       if (seatCheck.rows.length !== uniqueSeatIds.length) {
