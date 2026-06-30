@@ -119,10 +119,10 @@ class BookingService {
   }
 
 
-  
+
   /**
-  * Confirm a pending booking
-  */
+   * Confirm a pending booking
+   */
   static async confirmBooking(bookingId) {
     const client = await getClient();
 
@@ -241,7 +241,7 @@ class BookingService {
   }
 
 
-  
+
   /**
    * Get booking details with seats
    */
@@ -272,6 +272,53 @@ class BookingService {
     );
 
     return result.rows[0] || null;
+  }
+
+
+
+  /**
+   * Get user booking history
+   */
+  static async getUserBookings(userId) {
+    const { query } = require('../config/database');
+
+    const result = await query(
+      `SELECT 
+        b.id, b.show_id, b.total_seats, b.status,
+        b.created_at, b.updated_at,
+        m.title as movie_title,
+        sh.start_time, sh.end_time
+       FROM bookings b
+       JOIN shows sh ON b.show_id = sh.id
+       JOIN movies m ON sh.movie_id = m.id
+       WHERE b.user_id = $1
+       ORDER BY b.created_at DESC`,
+      [userId]
+    );
+
+    return result.rows;
+  }
+
+
+  
+  /**
+   * Cleanup expired bookings (run periodically)
+   */
+  static async cleanupExpiredBookings() {
+    const { query } = require('../config/database');
+
+    const result = await query(
+      `DELETE FROM bookings 
+      WHERE status = 'PENDING' 
+      AND created_at < NOW() - INTERVAL '30 seconds'
+      RETURNING id`
+    );
+    // ON DELETE CASCADE => automatically deletes booking_seats records
+
+    return {
+      expiredCount: result.rowCount,
+      bookingIds: result.rows.map(r => r.id),
+    };
   }
 }
 
