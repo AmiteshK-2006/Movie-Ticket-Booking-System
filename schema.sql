@@ -91,29 +91,12 @@ CREATE INDEX idx_bookings_show_status ON bookings(show_id, status);
 
 -- TABLE: booking_seats (THE CRITICAL ONE)
 CREATE TABLE booking_seats (
-    id SERIAL PRIMARY KEY,
-    booking_id INTEGER NOT NULL,
-    show_id INTEGER NOT NULL,
-    seat_id INTEGER NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT fk_booking_seats_booking 
-        FOREIGN KEY (booking_id) 
-        REFERENCES bookings(id) 
-        ON DELETE CASCADE,
-    
-    CONSTRAINT fk_booking_seats_show 
-        FOREIGN KEY (show_id) 
-        REFERENCES shows(id) 
-        ON DELETE RESTRICT,
-    
-    CONSTRAINT fk_booking_seats_seat 
-        FOREIGN KEY (seat_id) 
-        REFERENCES seats(id) 
-        ON DELETE RESTRICT,
-    
-    -- THE MONEY CONSTRAINT: Prevents double booking
-    CONSTRAINT booking_seats_unique_show_seat UNIQUE (show_id, seat_id)
+  id SERIAL PRIMARY KEY,
+  booking_id INTEGER REFERENCES bookings(id) ON DELETE CASCADE,  ← ADD THIS
+  show_id INTEGER REFERENCES shows(id),
+  seat_id INTEGER REFERENCES seats(id),
+  UNIQUE(show_id, seat_id),
+  created_at TIMESTAMP
 );
 
 CREATE INDEX idx_booking_seats_booking_id ON booking_seats(booking_id);
