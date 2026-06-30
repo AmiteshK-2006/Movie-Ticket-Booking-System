@@ -22,6 +22,8 @@ class BookingService {
     const client = await getClient();
 
     try {
+      await this.cleanupExpiredBookings();
+      
       // PHASE 1: Acquire Redis locks for all seats
       const lockResult = await LockService.acquireMultipleSeatLocks(showId, uniqueSeatIds);
 
