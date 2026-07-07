@@ -92,7 +92,7 @@ CREATE INDEX idx_bookings_show_status ON bookings(show_id, status);
 -- TABLE: booking_seats (THE CRITICAL ONE)
 CREATE TABLE booking_seats (
   id SERIAL PRIMARY KEY,
-  booking_id INTEGER REFERENCES bookings(id) ON DELETE CASCADE,  ← ADD THIS
+  booking_id INTEGER REFERENCES bookings(id) ON DELETE CASCADE,
   show_id INTEGER REFERENCES shows(id),
   seat_id INTEGER REFERENCES seats(id),
   UNIQUE(show_id, seat_id),
