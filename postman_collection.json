@@ -1,0 +1,160 @@
+{
+  "info": {
+    "name": "Movie Booking API",
+    "description": "API collection for testing movie ticket booking system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"1234567890\"\n}"
+            },
+            "url": "{{base_url}}/api/users"
+          }
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/users/1"
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/users"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Movies",
+      "item": [
+        {
+          "name": "Create Movie",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Inception\",\n  \"duration_minutes\": 148\n}"
+            },
+            "url": "{{base_url}}/api/movies"
+          }
+        },
+        {
+          "name": "Get All Movies",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/movies"
+          }
+        },
+        {
+          "name": "Get Movie Shows",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/movies/1/shows"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Shows",
+      "item": [
+        {
+          "name": "Create Show",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"movie_id\": 1,\n  \"start_time\": \"2024-03-15T18:00:00Z\",\n  \"end_time\": \"2024-03-15T20:45:00Z\"\n}"
+            },
+            "url": "{{base_url}}/api/shows"
+          }
+        },
+        {
+          "name": "Get All Shows",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/shows"
+          }
+        },
+        {
+          "name": "Get Available Seats",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/shows/1/seats/available"
+          }
+        },
+        {
+          "name": "Get Seat Summary",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/shows/1/seats/summary"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 1,\n  \"show_id\": 1,\n  \"seat_ids\": [1, 2, 3]\n}"
+            },
+            "url": "{{base_url}}/api/bookings"
+          }
+        },
+        {
+          "name": "Get Booking",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/bookings/1"
+          }
+        },
+        {
+          "name": "Confirm Booking",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/bookings/1/confirm"
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/bookings/1/cancel"
+          }
+        },
+        {
+          "name": "Get User Bookings",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/bookings/user/1"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000"
+    }
+  ]
+}
