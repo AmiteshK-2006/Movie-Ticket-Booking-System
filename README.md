@@ -144,7 +144,7 @@ PUT    /api/bookings/:id/confirm   # Confirm booking
 PUT    /api/bookings/:id/cancel    # Cancel booking
 ```
 
-## 🔒 Booking Flow
+## • Booking Flow
 
 1. **User requests booking** → `POST /api/bookings`
 2. **System acquires Redis locks** for selected seats
@@ -158,7 +158,7 @@ PUT    /api/bookings/:id/cancel    # Cancel booking
 10. **Status updated** to 'CONFIRMED'
 11. **Redis locks released** (or auto-expire after 30s)
 
-## 🧪 Testing
+## • Testing
 
 ### Test Concurrent Bookings
 
