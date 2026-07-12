@@ -253,9 +253,6 @@ MAX_SEATS_PER_BOOKING=6
 
 This is an academic project for DBMS course (UCS310).
 
-## • License
-
-MIT
 
 ## • Authors
 
